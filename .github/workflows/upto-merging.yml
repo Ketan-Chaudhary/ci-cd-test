@@ -17,18 +17,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure the branch is up-to-date with Staging
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git checkout ${{ github.ref_name }}
-          git fetch origin
-          git merge origin/Staging --no-ff --no-commit || {
-            echo "::error::Merge conflict detected! Please resolve the conflict before proceeding."
-            exit 1
-          }
-          git commit -m "Merge Staging into ${{ github.ref_name }} to ensure up-to-date changes"
-
       - name: Merge the appropriate folders to Staging
         run: |
           git checkout Staging
