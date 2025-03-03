@@ -1,0 +1,59 @@
+name: Staging Tests
+
+on:
+  push:
+    branches:
+      - Staging
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      # Step 3: Set up Git authentication for private repository access
+      - name: Set up GitHub authentication
+        run: |
+          git config --global credential.helper store
+          echo "https://${{ secrets.GH_TOKEN }}@github.com" > ~/.git-credentials
+
+      # Step 4: Install dependencies for frontend
+      - name: Install dependencies for frontend
+        run: |
+          cd client
+          npm install
+
+      # Step 5: Install dependencies for backend
+      - name: Install dependencies for backend
+        run: |
+          cd server
+          npm install
+
+      # Step 6: (Optional) Run tests for frontend
+      # Uncomment if tests are to be run for the frontend
+      # - name: Run tests for frontend
+      #   run: |
+      #     cd client
+      #     npm test
+
+      # Step 7: (Optional) Run tests for backend
+      # Uncomment if tests are to be run for the backend
+      # - name: Run tests for backend
+      #   run: |
+      #     cd server
+      #     npm test
+
+      # Step 8: Build frontend
+      - name: Build frontend
+        run: |
+          cd client
+          npm run build
