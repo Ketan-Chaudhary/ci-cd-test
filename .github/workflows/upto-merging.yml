@@ -1,4 +1,8 @@
-name: Full Merge Chain
+name: Branch Merging Pipeline
+
+concurrency:
+  group: merge-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
@@ -8,7 +12,7 @@ on:
       - "Shiva_Branch"
 
 jobs:
-  merge-to-Staging:
+  merge-to-staging:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -17,34 +21,57 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: User Add
+      - name: Configure Git
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: Merge the appropriate folders to Staging
+      - name: Selective Merge to Staging
         run: |
-          git checkout Staging
-          git fetch origin Staging
-          if [[ "${{ github.ref_name }}" == "Asif_Branch" ]]; then
-            git checkout ${{ github.ref_name }} -- backend/
-            git add backend/
-            git commit -m "Auto-merge: ${{ github.ref_name }} → Staging (backend folder)"
-          fi
-          if [[ "${{ github.ref_name }}" == "Pavan_Branch" ]]; then
-            git checkout ${{ github.ref_name }} -- frontend/
-            git add frontend/
-            git commit -m "Auto-merge: ${{ github.ref_name }} → Staging (frontend folder)"
-          fi
-          if [[ "${{ github.ref_name }}" == "Shiva_Branch" ]]; then
-            git checkout ${{ github.ref_name }} -- frontend/
-            git add frontend/
-            git commit -m "Auto-merge: ${{ github.ref_name }} → Staging (frontend folder)"
-          fi
-          git push origin Staging
+          git checkout staging
+          git pull origin staging
 
-  merge-to-Test:
-    needs: merge-to-Staging
+          # Merge specific directories based on source branch
+          case "${{ github.ref_name }}" in
+            "Asif_Branch") git checkout ${{ github.ref_name }} -- backend/ ;;
+            "Pavan_Branch") git checkout ${{ github.ref_name }} -- frontend/ ;;
+            "Shiva_Branch") git checkout ${{ github.ref_name }} -- frontend/ ;;
+          esac
+
+          git add .
+          git commit -m "Auto-merge: ${{ github.ref_name }} → Staging" || echo "No changes to commit"
+          git push origin staging
+
+  build-and-test:
+    needs: merge-to-staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Frontend CI
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          npm test
+
+      - name: Backend CI
+        working-directory: backend
+        run: |
+          npm ci
+          npm test
+          npm run lint
+
+  merge-to-test:
+    needs: build-and-test
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -53,56 +80,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Wait for 1 day before merging to Test
-        run: sleep 10
-
-      - name: Merge to Test
+      - name: Merge Staging to Test
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git fetch origin Staging Test
-          git checkout Test
-          git merge origin/Staging --no-ff --no-commit || {
-            echo "::error::Merge conflict detected! Resolve conflicts in Test branch manually"
-            git merge --abort
-            exit 1
-          }
-          git commit -m "Auto-merge: Staging → Test"
-          git push origin Test
-
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-
-  #     - name: Wait for 1 day before merging to Test
-  #       run: sleep 15
-
-  #     - name: Decode EC2 SSH Private Key
-  #       run: |
-  #         echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | base64 --decode > private_key.pem
-  #         chmod 600 private_key.pem
-
-  #     - name: Clone repository to EC2
-  #       run: |
-  #         ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
-  #           cd ~
-  #           if [ ! -d "rufrent-mine" ]; then
-  #             git clone https://github.com/Ketan-Chaudhary/rufrent-mine.git
-  #           fi
-  #           cd ~/rufrent-mine/Frontend
-  #           npm install
-  #           npm run build
-  #           sudo rm -rf /var/www/html/*
-  #           sudo cp -r ~/rufrent-mine/Frontend/dist/* /var/www/html/
-  #           sudo systemctl restart nginx
-  #           cd ~/rufrent-mine/backend
-  #           npm install
-  #           pm2 stop backend || true
-  #           pm2 start app.js --name backend
-  #           pm2 save
-  #         EOF
-
-  #     - name: Clean up private key
-  #       run: rm -f private_key.pem
+          git checkout test
+          git merge staging --no-ff -m "Auto-merge: Staging → Test"
+          git push origin test
