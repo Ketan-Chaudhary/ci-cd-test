@@ -35,6 +35,9 @@ jobs:
         with:
           ref: Deployment
 
+      - name: Fetch all branches
+        run: git fetch origin
+
       - name: Merge Test to Deployment
         run: |
           git config --global user.name "GitHub Actions"
