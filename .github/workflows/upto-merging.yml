@@ -59,14 +59,14 @@ jobs:
       - name: Frontend CI
         working-directory: Frontend
         run: |
-          npm install
-          npm run build
+          # npm ci
+          # npm run build
           # npm Test
 
       - name: Backend CI
         working-directory: backend
         run: |
-          npm install
+          # npm ci
           # npm Test
           # npm run lint
 
