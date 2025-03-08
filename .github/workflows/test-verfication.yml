@@ -42,6 +42,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          git fetch origin Test:Test
           git pull origin Deployment
            git merge Test -Xtheirs --no-ff --allow-unrelated-histories -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' Test)"
           git push origin Deployment
