@@ -56,6 +56,7 @@ jobs:
 
           # Rename the file and move it to the old_flags folder
           mv test-success.flag old_flags/test-success-$DATE.flag
+          rm test-success.flag
 
           # Add, commit, and push the changes
           git add old_flags/test-success-$DATE.flag
