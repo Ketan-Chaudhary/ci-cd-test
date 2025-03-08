@@ -7,7 +7,7 @@ concurrency:
 on:
   push:
     branches:
-      - deployment
+      - Deployment
   workflow_dispatch:
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
             # Update repository
             cd ~/rufrent-mine
             git fetch origin
-            git reset --hard origin/deployment
+            git reset --hard origin/Deployment
             git clean -fd
 
             # Frontend Deployment

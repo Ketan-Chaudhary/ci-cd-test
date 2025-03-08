@@ -7,7 +7,7 @@ concurrency:
 on:
   push:
     branches:
-      - test
+      - Test
 
 jobs:
   verify-success-file:
@@ -15,12 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: test
+          ref: Test
           fetch-depth: 0
 
       - name: Validate Success File
         run: |
-          if ! git show HEAD:test-success.flag; then
+          if ! git show HEAD:Test-success.flag; then
             echo "::error::Test success file not found in latest commit!"
             exit 1
           fi
@@ -40,12 +40,12 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git pull origin deployment
-          git merge test --no-ff -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' test)"
+          git merge Test --no-ff -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' Test)"
           git push origin deployment
 
       - name: Cleanup Test Branch
         run: |
-          git push origin --delete test || echo "Test branch already deleted"
+          git push origin --delete Test || echo "Test branch already deleted"
 
   trigger-deployment:
     needs: promote-to-deployment
