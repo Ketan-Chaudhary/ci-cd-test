@@ -12,7 +12,7 @@ on:
       - "Shiva_Branch"
 
 jobs:
-  merge-to-staging:
+  merge-to-Staging:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -28,7 +28,7 @@ jobs:
 
       - name: Selective Merge to Staging
         run: |
-          git checkout staging
+          git checkout Staging
           git pull origin Staging
 
           # Merge specific directories based on source branch
@@ -43,7 +43,7 @@ jobs:
           git push origin Staging
 
   build-and-Test:
-    needs: merge-to-staging
+    needs: merge-to-Staging
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
