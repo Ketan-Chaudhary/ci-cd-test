@@ -25,7 +25,7 @@ jobs:
             exit 1
           fi
 
-  promote-to-deployment:
+  promote-to-Deployment:
     needs: verify-success-file
     runs-on: ubuntu-latest
     permissions:
@@ -33,22 +33,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: deployment
+          ref: Deployment
 
       - name: Merge Test to Deployment
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git pull origin deployment
+          git pull origin Deployment
           git merge Test --no-ff -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' Test)"
-          git push origin deployment
+          git push origin Deployment
 
       - name: Cleanup Test Branch
         run: |
           git push origin --delete Test || echo "Test branch already deleted"
 
-  trigger-deployment:
-    needs: promote-to-deployment
+  trigger-Deployment:
+    needs: promote-to-Deployment
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Deployment Workflow
@@ -61,5 +61,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'deploy.yml',
-              ref: 'deployment'
+              ref: 'Deployment'
             })
