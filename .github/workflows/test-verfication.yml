@@ -43,9 +43,21 @@ jobs:
           git merge Test --no-ff -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' Test)"
           git push origin Deployment
 
-      - name: Cleanup Test Branch
+      - name: Rename and move test-success.flag
         run: |
-          git push origin --delete Test || echo "Test branch already deleted"
+          # Get the current date
+          DATE=$(date +'%Y-%m-%d_%H-%M-%S')
+
+          # Create a folder to store old flags if it doesn't exist
+          mkdir -p old_flags
+
+          # Rename the file and move it to the old_flags folder
+          mv test-success.flag old_flags/test-success-$DATE.flag
+
+          # Add, commit, and push the changes
+          git add old_flags/test-success-$DATE.flag
+          git commit -m "Renamed and moved test-success.flag to old_flags/ with timestamp"
+          git push origin Test
 
   trigger-Deployment:
     needs: promote-to-Deployment
