@@ -20,7 +20,7 @@ jobs:
 
       - name: Validate Success File
         run: |
-          if ! git show HEAD:Test-success.flag; then
+          if ! git show HEAD:test-success.flag; then
             echo "::error::Test success file not found in latest commit!"
             exit 1
           fi
