@@ -60,7 +60,7 @@ jobs:
           # Add, commit, and push the changes
           git add old_flags/test-success-$DATE.flag
           git commit -m "Renamed and moved test-success.flag to old_flags/ with timestamp"
-          git push origin Test
+          git push origin HEAD:Test
 
   trigger-Deployment:
     needs: promote-to-Deployment
