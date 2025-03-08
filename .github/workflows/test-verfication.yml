@@ -39,8 +39,14 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git pull origin Test Deployment
-          git merge Test --no-ff -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' Test)"
+          git fetch origin Test Deployment
+          git checkout Deployment
+          git merge origin/Test --no-ff --no-commit || {
+            echo "::error::Merge conflict detected! Resolve conflicts in Deployment branch manually"
+            git merge --abort
+            exit 1
+            }
+          git commit -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' Test)"
           git push origin Deployment
 
       - name: Rename and move test-success.flag
