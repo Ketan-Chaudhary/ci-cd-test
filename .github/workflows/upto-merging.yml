@@ -9,10 +9,9 @@ on:
     branches:
       - "Asif_Branch"
       - "Pavan_Branch"
-      #- "Shiva_Branch"
 
   schedule:
-    - cron: "48 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
+    - cron: "51 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
 
 jobs:
   merge-to-Staging:
@@ -36,7 +35,7 @@ jobs:
 
       - name: Merge accumulated changes
         run: |
-          # Fetch all changes
+          # Fetch all changes from the branches
           git fetch origin Asif_Branch Pavan_Branch
 
           # Track changes from Asif_Branch
@@ -47,6 +46,7 @@ jobs:
             git add "$file"
             git commit -m "Auto-merge: $file from Asif_Branch → Staging"
           done < changes.txt
+          rm -f changes.txt  # Clean up changes.txt after processing
 
           # Track changes from Pavan_Branch
           git checkout Pavan_Branch
@@ -56,15 +56,7 @@ jobs:
             git add "$file"
             git commit -m "Auto-merge: $file from Pavan_Branch → Staging"
           done < changes.txt
-
-          # Track changes from Shiva_Branch
-          # git checkout Shiva_Branch
-          # git diff --name-only Staging..Shiva_Branch > changes.txt
-          # while read file; do
-          #   git checkout Shiva_Branch -- "$file"
-          #   git add "$file"
-          #   git commit -m "Auto-merge: $file from Shiva_Branch → Staging"
-          # done < changes.txt
+          rm -f changes.txt  # Clean up changes.txt after processing
 
           # Push changes to Staging
           git push origin Staging
@@ -113,7 +105,6 @@ jobs:
       - name: Merge Staging to Test
         run: |
           git config --global user.name "GitHub Actions"
-
           git config --global user.email "actions@github.com"
           git fetch origin Staging Test
           git checkout Test
