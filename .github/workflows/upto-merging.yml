@@ -9,9 +9,7 @@ on:
     branches:
       - "Asif_Branch"
       - "Pavan_Branch"
-
-  schedule:
-    - cron: "55 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
+      - "Shiva_Branch"
 
 jobs:
   merge-to-Staging:
@@ -28,37 +26,20 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: Checkout Staging
+      - name: Selective Merge to Staging
         run: |
           git checkout Staging
           git pull origin Staging
 
-      - name: Merge accumulated changes
-        run: |
-          # Fetch all changes from the branches
-          git fetch origin Asif_Branch Pavan_Branch
+          # Merge specific directories based on source branch
+          case "${{ github.ref_name }}" in
+            "Asif_Branch") git checkout ${{ github.ref_name }} -- backend/ ;;
+            "Pavan_Branch") git checkout ${{ github.ref_name }} -- frontend/ ;;
+            "Shiva_Branch") git checkout ${{ github.ref_name }} -- frontend/ ;;
+          esac
 
-          # Track changes from Asif_Branch
-          git checkout Asif_Branch
-          git diff --name-only Staging..Asif_Branch > changes.txt
-          while read file; do
-            git checkout Asif_Branch -- "$file"
-            git add "$file"
-            git commit -m "Auto-merge: $file from Asif_Branch → Staging"
-          done < changes.txt
-          rm -f changes.txt  # Clean up changes.txt after processing
-
-          # Track changes from Pavan_Branch
-          git checkout Pavan_Branch
-          git diff --name-only Staging..Pavan_Branch > changes.txt
-          while read file; do
-            git checkout Pavan_Branch -- "$file"
-            git add "$file"
-            git commit -m "Auto-merge: $file from Pavan_Branch → Staging"
-          done < changes.txt
-          rm -f changes.txt  # Clean up changes.txt after processing
-
-          # Push changes to Staging
+          git add .
+          git commit -m "Auto-merge: ${{ github.ref_name }} → Staging" || echo "No changes to commit"
           git push origin Staging
 
   build-and-Test:
