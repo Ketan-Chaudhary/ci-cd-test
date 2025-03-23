@@ -11,7 +11,7 @@ on:
       - "Pavan_Branch"
 
   schedule:
-    - cron: "51 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
+    - cron: "55 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
 
 jobs:
   merge-to-Staging:
