@@ -12,7 +12,7 @@ on:
       - "Shiva_Branch"
 
   schedule:
-    - cron: "30 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
+    - cron: "44 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
 
 jobs:
   merge-to-Staging:
