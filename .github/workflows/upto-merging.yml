@@ -11,6 +11,9 @@ on:
       - "Pavan_Branch"
       - "Shiva_Branch"
 
+  schedule:
+    - cron: "30 12 * * *"
+
 jobs:
   merge-to-Staging:
     runs-on: ubuntu-latest
