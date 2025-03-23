@@ -12,7 +12,7 @@ on:
       #- "Shiva_Branch"
 
   schedule:
-    - cron: "44 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
+    - cron: "48 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
 
 jobs:
   merge-to-Staging:
@@ -37,7 +37,7 @@ jobs:
       - name: Merge accumulated changes
         run: |
           # Fetch all changes
-          git fetch origin Asif_Branch Pavan_Branch Shiva_Branch
+          git fetch origin Asif_Branch Pavan_Branch
 
           # Track changes from Asif_Branch
           git checkout Asif_Branch
