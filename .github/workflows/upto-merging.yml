@@ -9,7 +9,7 @@ on:
     branches:
       - "Asif_Branch"
       - "Pavan_Branch"
-      - "Shiva_Branch"
+      #- "Shiva_Branch"
 
   schedule:
     - cron: "44 12 * * *" # This triggers the workflow at 12:30 PM UTC every day
@@ -58,13 +58,13 @@ jobs:
           done < changes.txt
 
           # Track changes from Shiva_Branch
-          git checkout Shiva_Branch
-          git diff --name-only Staging..Shiva_Branch > changes.txt
-          while read file; do
-            git checkout Shiva_Branch -- "$file"
-            git add "$file"
-            git commit -m "Auto-merge: $file from Shiva_Branch → Staging"
-          done < changes.txt
+          # git checkout Shiva_Branch
+          # git diff --name-only Staging..Shiva_Branch > changes.txt
+          # while read file; do
+          #   git checkout Shiva_Branch -- "$file"
+          #   git add "$file"
+          #   git commit -m "Auto-merge: $file from Shiva_Branch → Staging"
+          # done < changes.txt
 
           # Push changes to Staging
           git push origin Staging
