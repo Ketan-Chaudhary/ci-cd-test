@@ -49,8 +49,8 @@ jobs:
 
           # Apply changes from each branch
           apply_changes Asif_Branch backend/
-          apply_changes Pavan_Branch frontend/
-          apply_changes Shiva_Branch frontend/
+          # apply_changes Pavan_Branch frontend/
+          # apply_changes Shiva_Branch frontend/
 
       - name: Commit Changes
         run: |
