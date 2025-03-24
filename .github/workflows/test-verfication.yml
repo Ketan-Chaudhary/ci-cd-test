@@ -1,0 +1,82 @@
+name: Production Gatekeeper
+
+concurrency:
+  group: verification-${{ github.sha }}
+  cancel-in-progress: false
+
+on:
+  push:
+    branches:
+      - Test
+
+jobs:
+  verify-success-file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Test
+          fetch-depth: 0
+
+      - name: Validate Success File
+        run: |
+          if ! git show HEAD:test-success.flag; then
+            echo "::error::Test success file not found in latest commit!"
+            exit 1
+          fi
+
+  promote-to-Deployment:
+    needs: verify-success-file
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Deployment
+
+      - name: Fetch all branches
+        run: git fetch origin
+
+      - name: Merge Test to Deployment
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git fetch origin Test:Test
+          git pull origin Deployment
+           git merge Test -Xtheirs --no-ff --allow-unrelated-histories -m "Production Release: Verified by $(git log -1 --pretty=format:'%ae' Test)"
+          git push origin Deployment
+
+      - name: Rename and move test-success.flag
+        run: |
+          # Get the current date
+          DATE=$(date +'%Y-%m-%d_%H-%M-%S')
+
+          # Create a folder to store old flags if it doesn't exist
+          mkdir -p old_flags
+
+          # Rename the file and move it to the old_flags folder
+          mv test-success.flag old_flags/test-success-$DATE.flag
+          git rm test-success.flag
+
+          # Add, commit, and push the changes
+          git add old_flags/test-success-$DATE.flag
+          git commit -m "Renamed and moved test-success.flag to old_flags/ with timestamp"
+          git push origin HEAD:Test
+
+  trigger-Deployment:
+    needs: promote-to-Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deployment Workflow
+        uses: actions/github-script@v6
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy.yml',
+              ref: 'Deployment'
+            })
