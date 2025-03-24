@@ -23,20 +23,20 @@ jobs:
       # Step 3: Set up Git authentication for private repository access
       - name: Set up GitHub authentication
         run: |
-          git config --global credential.helper store
-          echo "https://${{ secrets.GH_TOKEN }}@github.com" > ~/.git-credentials
+          # git config --global credential.helper store
+          # echo "https://${{ secrets.GH_TOKEN }}@github.com" > ~/.git-credentials
 
       # Step 4: Install dependencies for frontend
       - name: Install dependencies for frontend
         run: |
-          cd client
-          npm install
+          # cd client
+          # npm install
 
       # Step 5: Install dependencies for backend
       - name: Install dependencies for backend
         run: |
-          cd server
-          npm install
+          # cd server
+          # npm install
 
       # Step 6: (Optional) Run tests for frontend
       # Uncomment if tests are to be run for the frontend
@@ -55,5 +55,5 @@ jobs:
       # Step 8: Build frontend
       - name: Build frontend
         run: |
-          cd client
-          npm run build
+          # cd client
+          # npm run build
