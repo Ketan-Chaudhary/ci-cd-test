@@ -82,19 +82,19 @@ jobs:
       #     node-version: 18
       #     cache: "npm"
 
-      - name: Frontend CI
-        working-directory: frontend
-        run: |
-          # npm ci
-          # npm run build
-          # npm test
+      # - name: Frontend CI
+      #   working-directory: frontend
+      #   run: |
+      #     npm ci
+      #     npm run build
+      #     npm test
 
-      - name: Backend CI
-        working-directory: backend
-        run: |
-          # npm ci
-          # npm test
-          # npm run lint
+      # - name: Backend CI
+      #   working-directory: backend
+      #   run: |
+      #     npm ci
+      #     npm test
+      #     npm run lint
 
   merge-to-Test:
     needs: build-and-Test
