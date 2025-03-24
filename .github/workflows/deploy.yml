@@ -23,6 +23,7 @@ jobs:
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
           chmod 600 private_key.pem
 
+<<<<<<< HEAD
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem \
@@ -39,6 +40,19 @@ jobs:
             npm run build
             sudo rsync -a --delete dist/ /var/www/html/
             sudo systemctl reload nginx
+=======
+      # Step 4: SSH into EC2 and clone the full repository using SSH
+      - name: Clone repository to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+           
+
+            # Clone the entire repository into a folder (same as the repo name, rufrent-mine)
+            cd ~
+            if [ ! -d "rufrent-mine" ]; then
+              git clone git@github.com:Ketan-Chaudhary/rufrent-mine.git
+            fi
+>>>>>>> 906cf6e1836efad7818b993a5d552fe9426d1f12
 
             # Backend Deployment
             cd ../backend
@@ -47,5 +61,21 @@ jobs:
             pm2 save
           ENDSSH
 
+<<<<<<< HEAD
       - name: Cleanup SSH Key
+=======
+            # # Restart Nginx to serve the new frontend build
+            # sudo systemctl restart nginx
+
+            # # Go to the server directory, install dependencies, and start backend
+            # cd ~/rufrent-mine/backend
+            # npm install
+            # pm2 stop backend || true  # Stop the existing process if it exists
+            # pm2 start server.js --name backend  # Start your backend process with PM2
+            # pm2 save  # Save PM2 process list to restart on server reboot
+          EOF
+
+      # Step 5: Clean up private key
+      - name: Clean up private key
+>>>>>>> 906cf6e1836efad7818b993a5d552fe9426d1f12
         run: rm -f private_key.pem

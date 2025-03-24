@@ -21,7 +21,11 @@ jobs:
         with:
           fetch-depth: 0
 
+<<<<<<< HEAD
       - name: Configure Git
+=======
+      - name: User Add
+>>>>>>> 906cf6e1836efad7818b993a5d552fe9426d1f12
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
@@ -96,3 +100,43 @@ jobs:
           }
           git commit -m "Auto-merge: Staging → Test"
           git push origin Test
+<<<<<<< HEAD
+=======
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+
+  #     - name: Wait for 1 day before merging to Test
+  #       run: sleep 15
+
+  #     - name: Decode EC2 SSH Private Key
+  #       run: |
+  #         echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | base64 --decode > private_key.pem
+  #         chmod 600 private_key.pem
+
+  #     - name: Clone repository to EC2
+  #       run: |
+  #         ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+  #           cd ~
+  #           if [ ! -d "rufrent-mine" ]; then
+  #             git clone https://github.com/Ketan-Chaudhary/rufrent-mine.git
+  #           fi
+  #           cd ~/rufrent-mine/Frontend
+  #           npm install
+  #           npm run build
+  #           sudo rm -rf /var/www/html/*
+  #           sudo cp -r ~/rufrent-mine/Frontend/dist/* /var/www/html/
+  #           sudo systemctl restart nginx
+  #           cd ~/rufrent-mine/backend
+  #           npm install
+  #           pm2 stop backend || true
+  #           pm2 start app.js --name backend
+  #           pm2 save
+  #         EOF
+
+  #     - name: Clean up private key
+  #       run: rm -f private_key.pem
+>>>>>>> 906cf6e1836efad7818b993a5d552fe9426d1f12
