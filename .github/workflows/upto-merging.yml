@@ -1,15 +1,13 @@
-name: Branch Merging Pipeline
+name: Scheduled Branch Merging Pipeline
 
 concurrency:
-  group: merge-${{ github.ref }}
+  group: merge-daily
   cancel-in-progress: true
 
 on:
-  push:
-    branches:
-      - "Asif_Branch"
-      - "Pavan_Branch"
-      - "Shiva_Branch"
+  schedule:
+    - cron: "50 6 * * *" # 3 AM UTC every day
+  workflow_dispatch: # Optional manual trigger
 
 jobs:
   merge-to-Staging:
@@ -17,30 +15,58 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Staging
+        uses: actions/checkout@v4
         with:
+          ref: Staging
           fetch-depth: 0
 
-      - name: User Add
+      - name: Configure Git
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: Selective Merge to Staging
+      - name: Update Repository
         run: |
+          git remote update  # Fetch all branches and tags
           git checkout Staging
-          git pull origin Staging
+          git pull --ff-only origin Staging
 
-          # Merge specific directories based on source branch
-          case "${{ github.ref_name }}" in
-            "Asif_Branch") git checkout ${{ github.ref_name }} -- backend/ ;;
-            "Pavan_Branch") git checkout ${{ github.ref_name }} -- frontend/ ;;
-            "Shiva_Branch") git checkout ${{ github.ref_name }} -- frontend/ ;;
-          esac
+      - name: Apply Branch Changes
+        run: |
+          # Function to safely apply changes from a branch
+          apply_changes() {
+            branch="$1"
+            directory="$2"
+            
+            if git show-ref --verify refs/remotes/origin/$branch >/dev/null; then
+              echo "Applying changes from $branch to $directory"
+              git checkout origin/$branch -- $directory
+            else
+              echo "::warning::Branch $branch not found. Skipping."
+            fi
+          }
 
+          # Apply changes from each branch
+          apply_changes Asif_Branch backend/
+          apply_changes Pavan_Branch frontend/
+          apply_changes Shiva_Branch frontend/
+
+      - name: Commit Changes
+        run: |
           git add .
-          git commit -m "Auto-merge: ${{ github.ref_name }} → Staging" || echo "No changes to commit"
+          if ! git diff-index --quiet HEAD --; then
+            git commit -m "Scheduled update: Merged feature branches at 3 AM UTC"
+            echo "Changes committed"
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Push Changes Safely
+        run: |
+          git pull --rebase origin Staging  # Rebase any potential upstream changes
           git push origin Staging
+          echo "Staging branch updated successfully"
 
   build-and-Test:
     needs: merge-to-Staging
@@ -54,21 +80,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          # cache: "npm"
+          cache: "npm"
 
       - name: Frontend CI
-        working-directory: Frontend
+        working-directory: frontend
         run: |
-          # npm ci
-          # npm run build
-          # npm Test
+          npm ci
+          npm run build
+          npm test
 
       - name: Backend CI
         working-directory: backend
         run: |
-          # npm ci
-          # npm Test
-          # npm run lint
+          npm ci
+          npm test
+          npm run lint
 
   merge-to-Test:
     needs: build-and-Test
@@ -80,56 +106,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch all branches
-        run: git fetch --all
-
       - name: Merge Staging to Test
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git fetch origin Staging Test
+
           git checkout Test
-          git merge origin/Staging --no-ff --no-commit || {
-           echo "::error::Merge conflict detected! Resolve conflicts in Test branch manually"
-           git merge --abort
-           exit 1
-          }
-          git commit -m "Auto-merge: Staging → Test"
+          git pull origin Test
+          if ! git merge origin/Staging --no-ff --no-commit; then
+            echo "::error::Merge conflict detected! Resolve conflicts in Test branch manually"
+            git merge --abort
+            exit 1
+          fi
+          git commit -m "Auto-merge: Staging → Test (Scheduled Nightly Merge)"
           git push origin Test
-
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-
-  #     - name: Wait for 1 day before merging to Test
-  #       run: sleep 15
-
-  #     - name: Decode EC2 SSH Private Key
-  #       run: |
-  #         echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | base64 --decode > private_key.pem
-  #         chmod 600 private_key.pem
-
-  #     - name: Clone repository to EC2
-  #       run: |
-  #         ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
-  #           cd ~
-  #           if [ ! -d "rufrent-mine" ]; then
-  #             git clone https://github.com/Ketan-Chaudhary/rufrent-mine.git
-  #           fi
-  #           cd ~/rufrent-mine/Frontend
-  #           npm install
-  #           npm run build
-  #           sudo rm -rf /var/www/html/*
-  #           sudo cp -r ~/rufrent-mine/Frontend/dist/* /var/www/html/
-  #           sudo systemctl restart nginx
-  #           cd ~/rufrent-mine/backend
-  #           npm install
-  #           pm2 stop backend || true
-  #           pm2 start app.js --name backend
-  #           pm2 save
-  #         EOF
-
-  #     - name: Clean up private key
-  #       run: rm -f private_key.pem
