@@ -6,7 +6,7 @@ concurrency:
 
 on:
   schedule:
-    - cron: "48 11 * * *" # 3 AM UTC every day
+    - cron: "10 12 * * *" # 3 AM UTC every day
   workflow_dispatch: # Optional manual trigger
 
 jobs:
