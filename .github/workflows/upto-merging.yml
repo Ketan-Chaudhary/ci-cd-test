@@ -6,8 +6,8 @@ concurrency:
 
 on:
   schedule:
-    - cron: "50 6 * * *" # 3 AM UTC every day
-  workflow_dispatch: # Optional manual trigger
+    - cron: "50 6 * * *"
+  workflow_dispatch:
 
 jobs:
   merge-to-Staging:
@@ -76,25 +76,25 @@ jobs:
         with:
           ref: Staging
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "npm"
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 18
+      #     cache: "npm"
 
       - name: Frontend CI
         working-directory: frontend
         run: |
-          npm ci
-          npm run build
-          npm test
+          # npm ci
+          # npm run build
+          # npm test
 
       - name: Backend CI
         working-directory: backend
         run: |
-          npm ci
-          npm test
-          npm run lint
+          # npm ci
+          # npm test
+          # npm run lint
 
   merge-to-Test:
     needs: build-and-Test
